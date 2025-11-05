@@ -1,0 +1,15 @@
+{
+	"name": "gamevault",
+	"version": "1.0.0",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"dev:api": "cd apps/api && npm run dev",
+		"dev:web": "cd apps/web && npm run dev",
+		"docker:up": "docker-compose up -d",
+		"docker:down": "docker-compose down"
+	}
+}
