@@ -8,8 +8,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --production
+# Install ALL dependencies first (including dev for build)
+RUN npm install --omit=optional
 
 # Copy Prisma schema
 COPY prisma ./prisma/
@@ -23,6 +23,9 @@ COPY tsconfig.json ./
 
 # Build TypeScript
 RUN npm run build
+
+# Remove dev dependencies
+RUN npm prune --omit=dev --omit=optional
 
 # Create logs directory
 RUN mkdir -p logs
