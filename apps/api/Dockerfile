@@ -5,11 +5,11 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 
 WORKDIR /app
 
-# Copy only package.json (NOT package-lock.json)
+# Copy package.json
 COPY package.json ./
 
-# Install dependencies WITHOUT lock file (will generate fresh one for Linux)
-RUN npm install --omit=optional --no-package-lock
+# Install dependencies
+RUN npm install
 
 # Copy Prisma schema
 COPY prisma ./prisma/
@@ -24,18 +24,11 @@ COPY tsconfig.json ./
 # Build TypeScript
 RUN npm run build
 
-# Remove dev dependencies
-RUN npm prune --omit=dev --omit=optional
-
 # Create logs directory
 RUN mkdir -p logs
 
 # Expose port
 EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Start
-CMD ["node", "dist/server.js"]
+# Start command with automatic DB push
+CMD npx prisma db push --skip-generate && node dist/server.js
