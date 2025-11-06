@@ -6,3 +6,4 @@ logs
 *.log
 coverage
 .git
+package-lock.json

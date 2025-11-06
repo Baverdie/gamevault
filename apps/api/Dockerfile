@@ -5,11 +5,11 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy only package.json (NOT package-lock.json)
+COPY package.json ./
 
-# Install ALL dependencies first (including dev for build)
-RUN npm install --omit=optional
+# Install dependencies WITHOUT lock file (will generate fresh one for Linux)
+RUN npm install --omit=optional --no-package-lock
 
 # Copy Prisma schema
 COPY prisma ./prisma/
