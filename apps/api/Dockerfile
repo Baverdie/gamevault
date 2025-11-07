@@ -23,11 +23,11 @@ RUN npm run build
 # Logs directory
 RUN mkdir -p logs
 
+COPY start.sh ./
+RUN chmod +x start.sh
+
 # Expose port
 EXPOSE 8080
 
 # Start script
-COPY start.sh ./
-RUN chmod +x start.sh
-
-CMD ["./start.sh"]
+ENTRYPOINT ["sh", "./start.sh"]
