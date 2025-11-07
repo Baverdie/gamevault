@@ -1,9 +1,10 @@
 node_modules
 dist
-logs
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
 .env
 .env.local
-*.log
 coverage
-.git
-package-lock.json
+*.log

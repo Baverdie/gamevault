@@ -1,19 +1,13 @@
 #!/bin/sh
 set -e
 
-echo "===================================="
-echo "🚀 Starting GameVault API Container"
-echo "===================================="
+# Debug DB URL
+echo "Using DATABASE_URL: $DATABASE_URL"
 
-echo "🔄 Checking database connection..."
-npx prisma db push --skip-generate || {
-  echo "❌ Prisma failed to push schema to database."
-  echo "💡 Check that your DATABASE_URL is correctly set and Postgres is reachable."
-  exit 1
-}
+# Push Prisma schema vers la DB
+echo "Pushing Prisma schema..."
+npx prisma db push --accept-data-loss
 
-echo "✅ Database schema synchronized!"
-echo "------------------------------------"
-
-echo "🌐 Launching server on port 8080..."
+# Start server
+echo "Starting server..."
 node dist/server.js
