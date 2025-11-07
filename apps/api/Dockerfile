@@ -28,7 +28,10 @@ RUN npm run build
 RUN mkdir -p logs
 
 # Expose port
-EXPOSE 3001
+EXPOSE 8080
 
 # Start command with automatic DB push
-CMD npx prisma db push --skip-generate && node dist/server.js
+COPY start.sh ./
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]
