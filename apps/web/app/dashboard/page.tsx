@@ -12,18 +12,28 @@ import { Gamepad2, Star, Clock, TrendingUp } from 'lucide-react';
 
 export default function DashboardPage() {
 	const router = useRouter();
-	const user = useAuthStore((state) => state.user);
+	const { user, initialize } = useAuthStore();
 	const [stats, setStats] = useState<Stats | null>(null);
 	const [collection, setCollection] = useState<UserGame[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState<'collection' | 'search'>('collection');
 
 	useEffect(() => {
+		// Initialize auth from localStorage
+		initialize();
+	}, []);
+
+	useEffect(() => {
 		if (!user) {
-			router.push('/login');
-			return;
+			const timer = setTimeout(() => {
+				if (!user) {
+					router.push('/login');
+				}
+			}, 100);
+			return () => clearTimeout(timer);
+		} else {
+			loadData();
 		}
-		loadData();
 	}, [user, router]);
 
 	const loadData = async () => {
@@ -165,6 +175,7 @@ export default function DashboardPage() {
 								key={userGame.id}
 								userGame={userGame}
 								onDelete={handleDeleteGame}
+								onUpdate={loadData}
 							/>
 						))}
 					</div>
