@@ -34,7 +34,13 @@ server.setErrorHandler((error, request, reply) => {
 
 // CORS
 await server.register(cors, {
-	origin: config.nodeEnv === 'development' ? '*' : config.frontendUrl,
+	origin: [
+		'http://localhost:3000',
+		'https://gamevault-web.vercel.app',
+		/\.vercel\.app$/,
+	],
+	credentials: true,
+	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 });
 
 // JWT
