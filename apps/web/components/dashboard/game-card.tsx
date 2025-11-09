@@ -37,7 +37,7 @@ export function GameCard({ userGame, onDelete, onUpdate }: GameCardProps) {
 		try {
 			const token = localStorage.getItem('token');
 			await api.patch(
-				`/api/collection/${userGame.id}`,
+				`/api/collection/${userGame.gameId}`,
 				{ status: newStatus },
 				{ headers: { Authorization: `Bearer ${token}` } }
 			);
