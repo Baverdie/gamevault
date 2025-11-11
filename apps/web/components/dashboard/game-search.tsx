@@ -29,7 +29,26 @@ export function GameSearch({ onGameAdded }: GameSearchProps) {
 					Authorization: `Bearer ${token}`,
 				},
 			});
-			setResults(data.results || []);
+			// Filter official games (exclude clones/fan games)
+			const filtered = (data.results || []).filter((game: any) => {
+				// Keep games with high ratings (likely official)
+				if (game.ratings_count && game.ratings_count > 100) return true;
+				// Exclude obvious clones/fan games
+				const name = game.name.toLowerCase();
+				const excludePatterns = [
+					'fan game', 'fan-game', 'fangame',
+					'clone', 'copy', 'tribute',
+					'remake by', 'remaster by',
+					'unofficial', 'parody'
+				];
+				return !excludePatterns.some(pattern => name.includes(pattern));
+			});
+			// Sort by popularity
+			const sorted = filtered.sort((a: any, b: any) => {
+				return (b.ratings_count || 0) - (a.ratings_count || 0);
+			});
+
+			setResults(sorted);
 		} catch (error) {
 			console.error('Search failed:', error);
 		} finally {

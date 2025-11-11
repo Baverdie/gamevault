@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { UserGame } from '@/lib/api';
@@ -32,6 +32,22 @@ export function GameCard({ userGame, onDelete, onUpdate }: GameCardProps) {
 	const [rating, setRating] = useState(5);
 	const [content, setContent] = useState('');
 	const [submitting, setSubmitting] = useState(false);
+	const [hasReview, setHasReview] = useState(false);
+
+	useEffect(() => {
+		const checkReview = async () => {
+			try {
+				const token = localStorage.getItem('token');
+				const { data } = await api.get(`/api/reviews/game/${userGame.gameId}`, {
+					headers: { Authorization: `Bearer ${token}` }
+				});
+				setHasReview(data.reviews && data.reviews.length > 0);
+			} catch (error) {
+				console.error('Failed to check review:', error);
+			}
+		};
+		checkReview();
+	}, [userGame.gameId]);
 
 	const handleStatusChange = async (newStatus: string) => {
 		try {
@@ -120,8 +136,8 @@ export function GameCard({ userGame, onDelete, onUpdate }: GameCardProps) {
 					onClick={() => setShowReview(!showReview)}
 					className="flex-1"
 				>
-					<Star className="w-4 h-4 mr-2" />
-					Review
+					<Star className={`w-4 h-4 mr-2 ${hasReview ? 'fill-primary text-primary' : ''}`} />
+					{hasReview ? 'Edit Review' : 'Review'}
 				</Button>
 				<Button
 					variant="ghost"
