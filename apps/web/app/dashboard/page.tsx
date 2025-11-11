@@ -31,9 +31,42 @@ export default function DashboardPage() {
 				}
 			}, 100);
 			return () => clearTimeout(timer);
-		} else {
-			loadData();
 		}
+
+		// Abort controller pour éviter les requêtes en double
+		const controller = new AbortController();
+
+		const load = async () => {
+			if (loading) return; // Évite les appels multiples
+
+			try {
+				const token = localStorage.getItem('token');
+				const timestamp = Date.now();
+				const [statsRes, collectionRes] = await Promise.all([
+					api.get(`/api/stats/me?_t=${timestamp}`, {
+						headers: { Authorization: `Bearer ${token}` },
+						signal: controller.signal,
+					}),
+					api.get(`/api/collection?_t=${timestamp}`, {
+						headers: { Authorization: `Bearer ${token}` },
+						signal: controller.signal,
+					}),
+				]);
+				setStats(statsRes.data);
+				setCollection(collectionRes.data.games);
+			} catch (error: any) {
+				if (error.name !== 'CanceledError') {
+					console.error('Failed to load data:', error);
+				}
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		load();
+
+		// Cleanup : annule les requêtes en cours si le composant se démonte
+		return () => controller.abort();
 	}, [user, router]);
 
 	const loadData = async () => {
