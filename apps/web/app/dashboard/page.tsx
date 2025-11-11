@@ -72,13 +72,18 @@ export default function DashboardPage() {
 	const loadData = async () => {
 		try {
 			const token = localStorage.getItem('token');
-			const timestamp = Date.now(); // Cache buster
 			const [statsRes, collectionRes] = await Promise.all([
-				api.get(`/api/stats/me?_t=${timestamp}`, {
-					headers: { Authorization: `Bearer ${token}` }
+				api.get('/api/stats/me', {
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Cache-Control': 'no-cache',  // Force pas de cache
+					}
 				}),
-				api.get(`/api/collection?_t=${timestamp}`, {
-					headers: { Authorization: `Bearer ${token}` }
+				api.get('/api/collection', {
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Cache-Control': 'no-cache',
+					}
 				}),
 			]);
 			setStats(statsRes.data);

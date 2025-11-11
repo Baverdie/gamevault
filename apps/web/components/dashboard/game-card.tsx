@@ -57,7 +57,10 @@ export function GameCard({ userGame, onDelete, onUpdate }: GameCardProps) {
 				{ status: newStatus },
 				{ headers: { Authorization: `Bearer ${token}` } }
 			);
-			onUpdate();
+			
+			setTimeout(() => {
+				onUpdate();
+			}, 500);
 		} catch (error) {
 			console.error('Failed to update status:', error);
 		}
