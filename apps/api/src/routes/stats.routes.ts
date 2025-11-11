@@ -76,7 +76,7 @@ export async function statsRoutes(server: FastifyInstance) {
 			};
 
 			// Cache for 5 minutes
-			await redis.setex(cacheKey, 10, JSON.stringify(stats));
+			await redis.setex(cacheKey, 300, JSON.stringify(stats));
 
 			return stats;
 		},
