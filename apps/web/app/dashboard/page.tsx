@@ -19,73 +19,37 @@ export default function DashboardPage() {
 	const [activeTab, setActiveTab] = useState<'collection' | 'search'>('collection');
 
 	useEffect(() => {
-		// Initialize auth from localStorage
 		initialize();
 	}, []);
 
 	useEffect(() => {
-		if (!user) {
-			const timer = setTimeout(() => {
-				if (!user) {
-					router.push('/login');
-				}
-			}, 100);
-			return () => clearTimeout(timer);
+		if (!user && !loading) {
+			router.push('/login');
+			return;
 		}
 
-		// Abort controller pour éviter les requêtes en double
-		const controller = new AbortController();
-
-		const load = async () => {
-			if (loading) return; // Évite les appels multiples
-
-			try {
-				const token = localStorage.getItem('token');
-				const timestamp = Date.now();
-				const [statsRes, collectionRes] = await Promise.all([
-					api.get(`/api/stats/me?_t=${timestamp}`, {
-						headers: { Authorization: `Bearer ${token}` },
-						signal: controller.signal,
-					}),
-					api.get(`/api/collection?_t=${timestamp}`, {
-						headers: { Authorization: `Bearer ${token}` },
-						signal: controller.signal,
-					}),
-				]);
-				setStats(statsRes.data);
-				setCollection(collectionRes.data.games);
-			} catch (error: any) {
-				if (error.name !== 'CanceledError') {
-					console.error('Failed to load data:', error);
-				}
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		load();
-
-		// Cleanup : annule les requêtes en cours si le composant se démonte
-		return () => controller.abort();
-	}, [user, router]);
+		if (user && loading) {
+			loadData();
+		}
+	}, [user]);
 
 	const loadData = async () => {
 		try {
 			const token = localStorage.getItem('token');
+			if (!token) {
+				router.push('/login');
+				return;
+			}
+
 			const [statsRes, collectionRes] = await Promise.all([
 				api.get('/api/stats/me', {
-					headers: {
-						Authorization: `Bearer ${token}`,
-						'Cache-Control': 'no-cache',  // Force pas de cache
-					}
+					headers: { Authorization: `Bearer ${token}` }
 				}),
 				api.get('/api/collection', {
-					headers: {
-						Authorization: `Bearer ${token}`,
-						'Cache-Control': 'no-cache',
-					}
+					headers: { Authorization: `Bearer ${token}` }
 				}),
 			]);
+
 			setStats(statsRes.data);
 			setCollection(collectionRes.data.games);
 		} catch (error) {
@@ -102,9 +66,32 @@ export default function DashboardPage() {
 				headers: { Authorization: `Bearer ${token}` }
 			});
 			setCollection(collection.filter((g) => g.gameId !== gameId));
-			loadData(); // Reload stats
+			const statsRes = await api.get('/api/stats/me', {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			setStats(statsRes.data);
 		} catch (error) {
 			console.error('Failed to delete game:', error);
+		}
+	};
+
+	const handleUpdate = async () => {
+		try {
+			const token = localStorage.getItem('token');
+
+			const [statsRes, collectionRes] = await Promise.all([
+				api.get('/api/stats/me', {
+					headers: { Authorization: `Bearer ${token}` }
+				}),
+				api.get('/api/collection', {
+					headers: { Authorization: `Bearer ${token}` }
+				}),
+			]);
+
+			setStats(statsRes.data);
+			setCollection(collectionRes.data.games);
+		} catch (error) {
+			console.error('Failed to update data:', error);
 		}
 	};
 
@@ -117,6 +104,10 @@ export default function DashboardPage() {
 				</div>
 			</div>
 		);
+	}
+
+	if (!user) {
+		return null;
 	}
 
 	return (
@@ -188,8 +179,8 @@ export default function DashboardPage() {
 				<button
 					onClick={() => setActiveTab('collection')}
 					className={`px-4 py-2 rounded-lg transition-all ${activeTab === 'collection'
-							? 'bg-primary text-black'
-							: 'bg-foreground/10 text-foreground/60 hover:bg-foreground/20'
+						? 'bg-primary text-black'
+						: 'bg-foreground/10 text-foreground/60 hover:bg-foreground/20'
 						}`}
 				>
 					My Collection ({collection.length})
@@ -197,8 +188,8 @@ export default function DashboardPage() {
 				<button
 					onClick={() => setActiveTab('search')}
 					className={`px-4 py-2 rounded-lg transition-all ${activeTab === 'search'
-							? 'bg-secondary text-white'
-							: 'bg-foreground/10 text-foreground/60 hover:bg-foreground/20'
+						? 'bg-secondary text-white'
+						: 'bg-foreground/10 text-foreground/60 hover:bg-foreground/20'
 						}`}
 				>
 					Add Games
@@ -214,7 +205,7 @@ export default function DashboardPage() {
 								key={userGame.id}
 								userGame={userGame}
 								onDelete={handleDeleteGame}
-								onUpdate={loadData}
+								onUpdate={handleUpdate}
 							/>
 						))}
 					</div>
@@ -232,7 +223,7 @@ export default function DashboardPage() {
 					</Card>
 				)
 			) : (
-				<GameSearch onGameAdded={loadData} />
+				<GameSearch onGameAdded={handleUpdate} />
 			)}
 		</div>
 	);
