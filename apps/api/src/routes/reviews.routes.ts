@@ -5,12 +5,12 @@ import { prisma } from '../config/prisma.js';
 const createReviewSchema = z.object({
 	gameId: z.string(),
 	rating: z.number().min(1).max(10),
-	content: z.string().max(2000).optional(),
+	content: z.string().max(2000).optional().nullable(),
 });
 
 const updateReviewSchema = z.object({
 	rating: z.number().min(1).max(10).optional(),
-	content: z.string().max(2000).optional(),
+	content: z.string().max(2000).optional().nullable(),
 });
 
 export async function reviewsRoutes(server: FastifyInstance) {
