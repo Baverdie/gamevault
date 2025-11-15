@@ -92,57 +92,68 @@ export async function reviewsRoutes(server: FastifyInstance) {
 	});
 
 	// Create review
+	// Create review
 	server.post('/', {
+		onRequest: [server.authenticate],
 		schema: {
 			tags: ['reviews'],
 			security: [{ Bearer: [] }],
 			body: {
 				type: 'object',
-				required: ['gameId', 'rating'],
+				required: ['gameId', 'rating'],  // content est optionnel
 				properties: {
 					gameId: { type: 'string' },
 					rating: { type: 'number', minimum: 1, maximum: 10 },
-					content: { type: 'string' },
+					content: { type: 'string', nullable: true },  // ← Important: nullable
 				},
 			},
 		},
-		onRequest: [server.authenticate],
 		handler: async (request, reply) => {
 			try {
 				const userId = (request.user as any).userId;
-				const { gameId, rating, content } = createReviewSchema.parse(request.body);
+				const data = createReviewSchema.parse(request.body);
 
-				// Check if game exists
-				const game = await prisma.game.findUnique({ where: { id: gameId } });
-				if (!game) {
-					return reply.status(404).send({ error: 'Game not found' });
+				// Check if game exists in user collection
+				const userGame = await prisma.userGame.findFirst({
+					where: { userId, gameId: data.gameId },
+				});
+
+				if (!userGame) {
+					return reply.status(400).send({ error: 'Game not in your collection' });
 				}
 
-				// Check if already reviewed
-				const existing = await prisma.review.findUnique({
-					where: {
-						userId_gameId: { userId, gameId },
-					},
+				// Check if review already exists
+				const existing = await prisma.review.findFirst({
+					where: { userId, gameId: data.gameId },
 				});
 
 				if (existing) {
-					return reply.status(400).send({ error: 'Already reviewed this game' });
+					// Update existing review
+					const updated = await prisma.review.update({
+						where: { id: existing.id },
+						data: {
+							rating: data.rating,
+							content: data.content || null,  // ← Handle empty string
+						},
+						include: {
+							user: { select: { username: true } },
+							game: true,
+						},
+					});
+
+					return updated;
 				}
 
+				// Create new review
 				const review = await prisma.review.create({
 					data: {
 						userId,
-						gameId,
-						rating,
-						content,
+						gameId: data.gameId,
+						rating: data.rating,
+						content: data.content || null,  // ← Handle empty string
 					},
 					include: {
-						user: {
-							select: {
-								id: true,
-								username: true,
-							},
-						},
+						user: { select: { username: true } },
 						game: true,
 					},
 				});
