@@ -13,3 +13,30 @@ body {
   background-size: 100% 100%, 100% 100%, 50px 50px, 50px 50px;
   background-position: 0 0, 0 0, 0 0, 0 0;
 }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem !important;
+  }
+
+  /* Stats cards en colonne sur mobile */
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Collection en 1 colonne sur mobile */
+  .lg\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Texte plus petit */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+
+  /* Images collection plus petites */
+  img {
+    max-height: 200px;
+  }
+}
