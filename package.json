@@ -11,5 +11,8 @@
 		"dev:web": "cd apps/web && npm run dev",
 		"docker:up": "docker-compose up -d",
 		"docker:down": "docker-compose down"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.3"
 	}
 }
