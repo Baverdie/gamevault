@@ -12,6 +12,7 @@
     "@tanstack/react-query": "^5.90.6",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
+    "fast-jwt": "^6.0.2",
     "lucide-react": "^0.552.0",
     "next": "16.0.1",
     "react": "19.2.0",
@@ -28,6 +29,6 @@
     "eslint-config-next": "16.0.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
